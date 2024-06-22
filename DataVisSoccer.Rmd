@@ -1,0 +1,46 @@
+---
+title: "Visualization Assignment"
+author: "Harrison Stanton"
+date: "2024-02-20"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(worldfootballR)
+```
+
+```{r}
+#----- Get data for big five leagues for TEAMS -----#
+big5_team_stats_full <- fb_big5_advanced_season_stats(
+  season_end_year= c(2024), 
+  stat_type= "standard", 
+  team_or_player= "team"
+  ) 
+```
+
+##Creating the data frame for the team names
+```{r}
+labels_df <- big5_team_stats_full %>%
+  filter(Team_or_Opponent == 'team') %>%
+  group_by(Comp) %>%
+  slice_max(order_by = Gls_Per, n = 2)
+```
+
+
+```{r}
+big5_team_stats_full %>%
+  filter(Team_or_Opponent == 'team') %>%
+  ggplot(aes(x = xG_Per, y = Gls_Per, color = Comp)) +
+  geom_point() +
+  scale_color_brewer(palette =  "Set1") +
+  geom_abline(slope = 1, intercept = 0, linetype = 2) +
+  ylim(0.5, 2.75) +
+  xlim(0.5 ,2.75) +
+  xlab("Expected Goals/Game") +
+  ylab("Goals/Game") +
+  ggtitle("The best teams in world soccer outperform their xG") +
+  geom_text_repel(data = labels_df, aes(label = Squad), size = 3, color = 'black', min.segment.length = 0.25)
+```
+
